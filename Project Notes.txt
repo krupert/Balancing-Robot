@@ -1,0 +1,10 @@
+First sensor calibration
+Sensor readings with offsets:	7	-4	16387	0	-2	0
+Your offsets:	-1387	3117	1801	-36	-124	30
+
+Data is printed as: acelX acelY acelZ giroX giroY giroz
+
+
+
+Sensor readings with offsets:	2	4	16384	0	4	-3
+Your offsets:	-1451	3040	1798	-35	-124	28
