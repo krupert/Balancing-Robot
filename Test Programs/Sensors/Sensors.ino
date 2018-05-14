@@ -99,6 +99,7 @@ float ypr[3];           // [yaw, pitch, roll]   yaw/pitch/roll container and gra
 // packet structure for InvenSense teapot demo
 uint8_t teapotPacket[14] = { '$', 0x02, 0,0, 0,0, 0,0, 0,0, 0x00, 0x00, '\r', '\n' };
 
+float accelPos[2];
 
 
 // ================================================================
@@ -157,11 +158,11 @@ void setup() {
 
     // supply your own gyro offsets here, scaled for min sensitivity
     mpu.setXGyroOffset(-36);
-    mpu.setYGyroOffset(-124);
-    mpu.setZGyroOffset(30);
-    mpu.setZAccelOffset(1801); // 1688 factory default for my test chip
-    mpu.setYAccelOffset(3117);
-    mpu.setXAccelOffset(-1387);
+    mpu.setYGyroOffset(-152);
+    mpu.setZGyroOffset(21);
+    mpu.setZAccelOffset(1797); // 1688 factory default for my test chip
+    mpu.setYAccelOffset(3130);
+    mpu.setXAccelOffset(-1466);
     
     // make sure it worked (returns 0 if so)
     if (devStatus == 0) {
@@ -189,9 +190,8 @@ void setup() {
         Serial.print(devStatus);
         Serial.println(F(")"));
     }
-
     // configure LED for output
-    pinMode(LED_PIN, OUTPUT);
+    pinMode(LED_PIN, OUTPUT); 
 }
 
 
@@ -246,29 +246,40 @@ void loop() {
 
         mpu.dmpGetQuaternion(&q, fifoBuffer);
         mpu.dmpGetEuler(euler, &q);
-        Serial.print("Gyro:\t");
+
+        mpu.dmpGetAccel(&aa, fifoBuffer);
+        mpu.dmpGetGravity(&gravity, &q);
+        mpu.dmpGetLinearAccel(&aaReal, &aa, &gravity);
+
+        accelPos[0] += aaReal.x;
+        //Serial.print("Gyro:\t");
         Serial.print(euler[0] * 180/M_PI);
         Serial.print("\t");
         Serial.print(euler[1] * 180/M_PI);
         Serial.print("\t");
-        Serial.println(euler[2] * 180/M_PI);
+        Serial.print(euler[2] * 180/M_PI);
+        Serial.print("\t");
+        Serial.print(aaReal.x);
+        Serial.print("\t");
+        Serial.println(aaReal.y);
+        
 
 
-//        #ifdef OUTPUT_READABLE_WORLDACCEL
-//            // display initial world-frame acceleration, adjusted to remove gravity
-//            // and rotated based on known orientation from quaternion
-//            mpu.dmpGetQuaternion(&q, fifoBuffer);
-//            mpu.dmpGetAccel(&aa, fifoBuffer);
-//            mpu.dmpGetGravity(&gravity, &q);
-//            mpu.dmpGetLinearAccel(&aaReal, &aa, &gravity);
-//            mpu.dmpGetLinearAccelInWorld(&aaWorld, &aaReal, &q);
-//            Serial.print("aworld\t");
-//            Serial.print(aaWorld.x);
-//            Serial.print("\t");
-//            Serial.print(aaWorld.y);
-//            Serial.print("\t");
-//            Serial.println(aaWorld.z);
-//        #endif
+        #ifdef OUTPUT_READABLE_WORLDACCEL
+            // display initial world-frame acceleration, adjusted to remove gravity
+            // and rotated based on known orientation from quaternion
+            mpu.dmpGetQuaternion(&q, fifoBuffer);
+            mpu.dmpGetAccel(&aa, fifoBuffer);
+            mpu.dmpGetGravity(&gravity, &q);
+            mpu.dmpGetLinearAccel(&aaReal, &aa, &gravity);
+            mpu.dmpGetLinearAccelInWorld(&aaWorld, &aaReal, &q);
+            Serial.print("aworld\t");
+            Serial.print(aaWorld.x);
+            Serial.print("\t");
+            Serial.print(aaWorld.y);
+            Serial.print("\t");
+            Serial.println(aaWorld.z);
+        #endif
     
 
         // blink LED to indicate activity
